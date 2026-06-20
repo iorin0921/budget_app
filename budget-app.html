@@ -106,8 +106,18 @@
     }
 
     @media (max-width: 759px) {
+      html.home-screen-active {
+        height: 100%;
+        overflow: hidden;
+        overscroll-behavior: none;
+      }
+
       body.home-view {
+        position: fixed;
+        inset: 0;
+        width: 100%;
         height: 100dvh;
+        min-height: 0;
         overflow: hidden;
         overscroll-behavior: none;
       }
@@ -119,11 +129,11 @@
         z-index: auto;
         /* 一部のiPhone表示では safe-area-inset-top が 0 になるため、
            タイトルがステータスバーの下へ隠れない最小余白を設ける。 */
-        padding-top: max(30px, calc(14px + var(--safe-top)));
+        padding-top: max(46px, calc(14px + var(--safe-top)));
       }
 
       body.home-view .app-shell {
-        padding-top: 8px;
+        padding-top: 4px;
       }
 
       /* iPhone 13 mini を含む狭い幅では、日付とタグを小さく横に並べる。 */
@@ -1876,6 +1886,7 @@
       init();
 
       function init() {
+        document.documentElement.classList.add("home-screen-active");
         elements.monthInput.value = selectedMonth;
         elements.dateInput.value = toDateKey(new Date());
         applyTheme(state.themeId);
@@ -2810,6 +2821,7 @@
         currentView = view;
         const isHome = view === "home";
         document.body.classList.toggle("home-view", isHome);
+        document.documentElement.classList.toggle("home-screen-active", isHome);
         document.body.classList.toggle("editor-view-active", view === "editor");
         elements.backButton.hidden = isHome;
         elements.homeView.hidden = view !== "home";
