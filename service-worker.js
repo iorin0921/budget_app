@@ -1,4 +1,4 @@
-const CACHE_NAME = "budget-app-v7";
+const CACHE_NAME = "budget-app-v8";
 const APP_SHELL = [
   "./budget-app.html",
   "./manifest.webmanifest",
