@@ -112,6 +112,13 @@
         overscroll-behavior: none;
       }
 
+      /* 初期画面はスクロールしないため、ヘッダーを固定せず本文と一緒に配置する。
+         これにより本文がヘッダーの下へ潜り込むことを防ぐ。 */
+      body.home-view .app-header {
+        position: static;
+        z-index: auto;
+      }
+
       /* iPhone 13 mini を含む狭い幅では、日付とタグを小さく横に並べる。 */
       html.narrow-viewport .entry-grid {
         grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
