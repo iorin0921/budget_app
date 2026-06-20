@@ -144,6 +144,21 @@
         min-height: 44px;
       }
 
+      /* iOS の日付入力はネイティブ表示の最小幅が残ることがあるため、
+         狭い画面では通常の入力欄として幅を親要素に合わせる。日付選択は維持される。 */
+      html.narrow-viewport .entry-grid input[type="date"] {
+        display: block;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box;
+        -webkit-appearance: none;
+        appearance: none;
+        padding-inline: 10px;
+        font-size: 16px;
+        letter-spacing: -0.02em;
+      }
+
       /* アドレスバーやキーボードで高さが小さくなったときは、
          情報の優先度を変えずに余白だけを少し詰める。 */
       html.short-viewport .app-shell {
