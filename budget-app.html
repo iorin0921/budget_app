@@ -112,26 +112,6 @@
         overscroll-behavior: none;
       }
 
-      /* Safari のアドレスバーが開いて表示領域が狭いときだけ、
-         入力欄まで到達できるよう本文側をスクロール可能にする。 */
-      html.compact-viewport body.home-view {
-        height: auto;
-        min-height: 100dvh;
-        overflow-x: hidden;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior-y: none;
-        scroll-padding-bottom: calc(28px + var(--browser-bottom-inset, 0px));
-      }
-
-      html.compact-viewport body.home-view .app-shell {
-        padding-bottom: max(112px, calc(28px + var(--browser-bottom-inset, 0px)));
-      }
-
-      html.compact-viewport body.home-view .entry-form {
-        scroll-margin-bottom: max(112px, calc(28px + var(--browser-bottom-inset, 0px)));
-      }
-
       /* iPhone 13 mini を含む狭い幅では、日付とタグを小さく横に並べる。 */
       html.narrow-viewport .entry-grid {
         grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
@@ -1897,7 +1877,6 @@
         window.addEventListener("resize", updateViewportLayout);
         window.visualViewport?.addEventListener("resize", updateViewportLayout);
         window.visualViewport?.addEventListener("scroll", updateViewportLayout);
-        document.addEventListener("focusin", keepFocusedFieldVisible);
 
         elements.monthInput.addEventListener("change", () => {
           window.clearTimeout(budgetTimer);
@@ -2024,28 +2003,12 @@
         const viewport = window.visualViewport;
         const visualHeight = viewport?.height || window.innerHeight;
         const visualWidth = viewport?.width || window.innerWidth;
-        const visualOffset = viewport?.offsetTop || 0;
-        const browserBottomInset = Math.max(0, window.innerHeight - visualHeight - visualOffset);
         const isMobile = window.matchMedia("(max-width: 759px)").matches;
-        const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 
-        root.classList.toggle("compact-viewport", isMobile && !isStandalone);
         root.classList.toggle("narrow-viewport", isMobile && visualWidth < 405);
         root.classList.toggle("short-viewport", isMobile && visualHeight < 700);
-        root.style.setProperty("--browser-bottom-inset", `${Math.ceil(browserBottomInset)}px`);
         root.style.setProperty("--app-viewport-width", `${Math.floor(visualWidth)}px`);
         root.style.setProperty("--app-viewport-height", `${Math.floor(visualHeight)}px`);
-      }
-
-      function keepFocusedFieldVisible(event) {
-        const field = event.target;
-        if (!document.documentElement.classList.contains("compact-viewport")) return;
-        if (!field.matches("input, select, textarea")) return;
-
-        window.setTimeout(() => {
-          updateViewportLayout();
-          field.scrollIntoView({ block: "center", inline: "nearest", behavior: "smooth" });
-        }, 180);
       }
 
       function loadState() {
@@ -2840,7 +2803,15 @@
         elements.entriesView.hidden = view !== "entries";
         elements.breakdownView.hidden = view !== "breakdown";
         elements.settingsView.hidden = view !== "settings";
-        window.scrollTo({ top: 0, behavior: "auto" });
+        resetPageScroll();
+        window.requestAnimationFrame(resetPageScroll);
+      }
+
+      function resetPageScroll() {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
       }
 
       function maybePromptMonthlyBackup() {
