@@ -132,10 +132,9 @@
         scroll-margin-bottom: max(112px, calc(28px + var(--browser-bottom-inset, 0px)));
       }
 
-      /* iPhone 13 mini を含む狭い幅では、日付のネイティブ入力欄が
-         金額欄に重ならないよう、日付・金額を縦に並べる。 */
+      /* iPhone 13 mini を含む狭い幅では、日付とタグを小さく横に並べる。 */
       html.narrow-viewport .entry-grid {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
         gap: 6px;
       }
 
@@ -157,6 +156,33 @@
         padding-inline: 10px;
         font-size: 16px;
         letter-spacing: -0.02em;
+      }
+
+      html.narrow-viewport .month-row {
+        grid-template-columns: minmax(0, 1fr) 64px;
+        gap: 6px;
+      }
+
+      html.narrow-viewport .month-row > .field,
+      html.narrow-viewport #monthInput {
+        min-width: 0;
+      }
+
+      html.narrow-viewport #monthInput {
+        display: block;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+        -webkit-appearance: none;
+        appearance: none;
+        padding-inline: 8px;
+        font-size: 16px;
+      }
+
+      html.narrow-viewport #thisMonthButton {
+        width: 64px;
+        min-width: 0;
+        padding-inline: 8px;
       }
 
       /* アドレスバーやキーボードで高さが小さくなったときは、
@@ -691,6 +717,7 @@
     }
 
     .entry-form textarea {
+      height: 44px;
       min-height: 44px;
       max-height: 70px;
       padding-top: 10px;
@@ -1488,13 +1515,13 @@
                 <input id="dateInput" type="date" required>
               </label>
               <label class="field">
-                <span>金額</span>
-                <input id="amountInput" inputmode="numeric" type="text" placeholder="例: 1280" required>
+                <span>タグ</span>
+                <select id="tagInput" required></select>
               </label>
             </div>
             <label class="field">
-              <span>タグ</span>
-              <select id="tagInput" required></select>
+              <span>金額</span>
+              <input id="amountInput" inputmode="numeric" type="text" placeholder="例: 1280" required>
             </label>
             <label class="field">
               <span>メモ</span>
@@ -1524,13 +1551,13 @@
                   <input id="editDateInput" type="date" required>
                 </label>
                 <label class="field">
-                  <span>金額</span>
-                  <input id="editAmountInput" inputmode="numeric" type="text" placeholder="例: 1280" required>
+                  <span>タグ</span>
+                  <select id="editTagInput" required></select>
                 </label>
               </div>
               <label class="field">
-                <span>タグ</span>
-                <select id="editTagInput" required></select>
+                <span>金額</span>
+                <input id="editAmountInput" inputmode="numeric" type="text" placeholder="例: 1280" required>
               </label>
               <label class="field">
                 <span>メモ</span>
