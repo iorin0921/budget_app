@@ -1,0 +1,17 @@
+{
+  "name": "予算帳",
+  "short_name": "予算帳",
+  "start_url": "budget-app.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f8fb",
+  "theme_color": "#23756b",
+  "icons": [
+    {
+      "src": "icons/app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

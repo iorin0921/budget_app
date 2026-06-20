@@ -1,0 +1,2907 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="予算帳">
+  <meta name="theme-color" content="#f7f8fb">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/app-icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/app-icon.png">
+  <title>予算帳</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fb;
+      --surface: #ffffff;
+      --surface-strong: #eef5f3;
+      --ink: #172026;
+      --muted: #66737f;
+      --line: #d9e0e7;
+      --accent: #23756b;
+      --accent-2: #325fa8;
+      --accent-rgb: 35, 117, 107;
+      --accent-2-rgb: 50, 95, 168;
+      --accent-soft: #eef5f3;
+      --theme-base: #23756b;
+      --theme-highlight: #325fa8;
+      --theme-highlight-ink: #325fa8;
+      --theme-highlight-soft: #e8edf7;
+      --header-bg: rgba(247, 248, 251, 0.92);
+      --header-line: rgba(217, 224, 231, 0.86);
+      --danger: #bd3a3a;
+      --warning: #b46d16;
+      --good: #28724e;
+      --shadow: 0 14px 34px rgba(32, 42, 54, 0.08);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body[data-theme="lavender"] {
+      --bg: #fbf5ff;
+      --surface-strong: #efdaf9;
+      --accent: #8246b2;
+      --accent-2: #6f3a9c;
+      --accent-rgb: 130, 70, 178;
+      --accent-2-rgb: 111, 58, 156;
+      --accent-soft: #f5ecfb;
+      --theme-base: #ad6ce0;
+      --theme-highlight: #edbd47;
+      --theme-highlight-ink: #8d5b00;
+      --theme-highlight-soft: #fff1c9;
+      --header-bg: rgba(252, 249, 254, 0.92);
+      --header-line: rgba(225, 207, 237, 0.9);
+    }
+
+    body[data-theme="sky"] {
+      --bg: #f4fbff;
+      --surface-strong: #d9f0ff;
+      --accent: #197cac;
+      --accent-2: #286a99;
+      --accent-rgb: 25, 124, 172;
+      --accent-2-rgb: 40, 106, 153;
+      --accent-soft: #eaf7ff;
+      --theme-base: #99d8ff;
+      --theme-highlight: #eab63b;
+      --theme-highlight-ink: #865b00;
+      --theme-highlight-soft: #fff0cb;
+      --header-bg: rgba(247, 252, 255, 0.92);
+      --header-line: rgba(201, 230, 247, 0.92);
+    }
+
+    body[data-theme="pink"] {
+      --bg: #fff6fa;
+      --surface-strong: #ffe2ef;
+      --accent: #b73570;
+      --accent-2: #902759;
+      --accent-rgb: 183, 53, 112;
+      --accent-2-rgb: 144, 39, 89;
+      --accent-soft: #ffedf5;
+      --theme-base: #ffacd3;
+      --theme-highlight: #8ed7d2;
+      --theme-highlight-ink: #347e7b;
+      --theme-highlight-soft: #e8f8f6;
+      --header-bg: rgba(255, 249, 252, 0.92);
+      --header-line: rgba(246, 207, 224, 0.92);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--bg);
+    }
+
+    body {
+      min-height: 100%;
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 16px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 759px) {
+      body.home-view {
+        height: 100dvh;
+        overflow: hidden;
+        overscroll-behavior: none;
+      }
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      min-height: 44px;
+      padding: 10px 12px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 74px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.14);
+    }
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      padding: calc(14px + var(--safe-top)) 12px 10px;
+      background: var(--header-bg);
+      border-bottom: 1px solid var(--header-line);
+      backdrop-filter: blur(16px);
+    }
+
+    body[data-theme] .app-header {
+      border-bottom: 3px solid var(--theme-base);
+      padding-bottom: 8px;
+    }
+
+    .brand {
+      grid-column: 2;
+      min-width: 0;
+    }
+
+    .brand-kicker {
+      margin: 0 0 1px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(20px, 5vw, 30px);
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .app-header > .header-actions {
+      grid-column: 3;
+      justify-self: end;
+    }
+
+    .menu-scrim {
+      position: fixed;
+      inset: 0;
+      z-index: 39;
+      background: rgba(17, 27, 34, 0.28);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease;
+    }
+
+    .menu-scrim.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .header-menu {
+      position: fixed;
+      inset: 0 0 0 auto;
+      z-index: 40;
+      display: grid;
+      align-content: start;
+      width: min(60vw, 260px);
+      gap: 6px;
+      padding: calc(24px + var(--safe-top)) 16px calc(24px + var(--safe-bottom));
+      border-left: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.97);
+      box-shadow: -18px 0 44px rgba(20, 28, 34, 0.18);
+      backdrop-filter: blur(16px);
+      overflow-y: auto;
+      pointer-events: none;
+      transform: translateX(102%);
+      transition: transform 220ms ease, visibility 220ms ease;
+      visibility: hidden;
+    }
+
+    .header-menu.open {
+      pointer-events: auto;
+      transform: translateX(0);
+      visibility: visible;
+    }
+
+    .header-menu::before {
+      content: "メニュー";
+      margin: 2px 4px 12px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .header-menu button {
+      min-height: 50px;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--ink);
+      font-weight: 850;
+      text-align: left;
+      padding: 12px;
+    }
+
+    .header-menu button:active,
+    .header-menu button:focus-visible {
+      background: var(--accent-soft);
+      color: var(--accent-2);
+      outline: none;
+    }
+
+    body.menu-open {
+      overflow: hidden;
+    }
+
+    .back-button,
+    .icon-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 40px;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.76);
+      color: var(--accent-2);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .back-button {
+      grid-column: 1;
+      gap: 2px;
+      padding: 7px 9px 7px 7px;
+      font-size: 14px;
+      font-weight: 850;
+    }
+
+    .back-mark {
+      font-size: 23px;
+      font-weight: 500;
+      line-height: 0.8;
+    }
+
+    .icon-button.active {
+      border-color: var(--accent-2);
+      background: var(--accent-2);
+      color: #fff;
+    }
+
+    .menu-icon {
+      display: grid;
+      width: 18px;
+      gap: 4px;
+    }
+
+    .menu-icon span {
+      display: block;
+      height: 2px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+
+    .app-shell {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: 16px 10px calc(22px + var(--safe-bottom));
+    }
+
+    .month-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: end;
+      margin-bottom: 8px;
+    }
+
+    body[data-theme] #thisMonthButton {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--accent-2);
+    }
+
+    .field {
+      display: grid;
+      gap: 4px;
+    }
+
+    .field span,
+    .field label,
+    .inline-label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 44px;
+      border-radius: 8px;
+      padding: 10px 14px;
+      background: #e8edf2;
+      color: #1c2730;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .button.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .button.blue {
+      background: var(--accent-2);
+      color: #fff;
+    }
+
+    .button.ghost.blue {
+      background: var(--accent-2);
+      color: #fff;
+      border-color: var(--accent-2);
+    }
+
+    .button.danger {
+      background: #f7e3e3;
+      color: var(--danger);
+    }
+
+    .button.ghost {
+      background: transparent;
+      color: var(--accent-2);
+      border: 1px solid var(--line);
+    }
+
+    .button.compact {
+      min-height: 36px;
+      padding: 7px 10px;
+      font-size: 14px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .summary-card {
+      display: grid;
+      min-height: 72px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .summary-card.primary {
+      grid-column: 1 / -1;
+      min-height: 104px;
+      background: var(--accent-soft);
+    }
+
+    body[data-theme] .summary-card.primary {
+      position: relative;
+      overflow: hidden;
+      border-color: var(--line);
+      background: var(--accent-soft);
+    }
+
+    body[data-theme] .summary-card.primary::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 3px;
+      background: var(--theme-base);
+      opacity: 0.58;
+    }
+
+    .summary-label {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .summary-value {
+      align-self: center;
+      margin: 3px 0;
+      font-size: clamp(22px, 7vw, 38px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: 0;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+    }
+
+    .summary-sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .summary-card.over .summary-value {
+      color: var(--danger);
+    }
+
+    .summary-card.summary-link {
+      width: 100%;
+      cursor: pointer;
+      text-align: left;
+      transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    .summary-card.summary-link::after {
+      content: "›";
+      position: absolute;
+      right: 10px;
+      bottom: 8px;
+      color: var(--accent-2);
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    body[data-theme] .summary-card.summary-link::after {
+      display: grid;
+      width: 24px;
+      height: 24px;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--theme-highlight-soft);
+      color: var(--theme-highlight-ink);
+    }
+
+    .summary-card.summary-link {
+      position: relative;
+      padding-right: 28px;
+    }
+
+    .summary-card.summary-link:active {
+      transform: scale(0.98);
+    }
+
+    .summary-card.summary-link:focus-visible {
+      border-color: var(--accent-2);
+      box-shadow: 0 0 0 3px rgba(var(--accent-2-rgb), 0.2), var(--shadow);
+      outline: none;
+    }
+
+    .progress {
+      width: 100%;
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #dce3e9;
+      margin-top: 8px;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: flex-end;
+      min-height: 14px;
+      margin-top: 3px;
+    }
+
+    .progress-percent {
+      color: currentColor;
+      font-size: 11px;
+      font-weight: 800;
+      opacity: 0.76;
+    }
+
+    body[data-theme] .progress {
+      background: var(--theme-highlight-soft);
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 180ms ease;
+    }
+
+    .progress-bar.over {
+      background: var(--danger);
+    }
+
+    body[data-theme] .progress-bar:not(.over) {
+      background: var(--theme-base);
+    }
+
+    .surface {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .surface-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .surface-title h2 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    body[data-theme] .surface-title h2::before {
+      content: "";
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      margin: 0 7px 1px 0;
+      border-radius: 50%;
+      background: var(--theme-highlight);
+      vertical-align: middle;
+    }
+
+    .surface-title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .entry-form {
+      display: grid;
+      gap: 8px;
+    }
+
+    .entry-form textarea {
+      min-height: 44px;
+      max-height: 70px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+
+    .entry-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 8px;
+    }
+
+    .entry-grid > .field {
+      min-width: 0;
+    }
+
+    .entry-grid input {
+      height: 48px;
+      min-height: 48px;
+      min-width: 0;
+    }
+
+    .form-actions {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 8px;
+      align-items: center;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .section-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .expense-list,
+    .breakdown-list,
+    .tag-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .history-tools {
+      display: grid;
+      gap: 8px;
+      margin: 0 0 10px;
+    }
+
+    .history-filter-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 8px;
+    }
+
+    .expense-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .expense-item.editable {
+      cursor: pointer;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-soft);
+    }
+
+    .expense-item.editable:focus-visible {
+      outline: 3px solid var(--accent-2);
+      outline-offset: 2px;
+    }
+
+    .expense-main {
+      min-width: 0;
+    }
+
+    .expense-meta,
+    .tag-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .expense-date {
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 850;
+    }
+
+    .expense-memo {
+      margin: 4px 0 0;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.3;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .expense-amount {
+      color: var(--ink);
+      font-size: 20px;
+      font-weight: 950;
+      line-height: 1.1;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .expense-amount.credit,
+    .summary-value.credit,
+    .breakdown-value.credit {
+      color: var(--good);
+    }
+
+    .expense-edit-mark {
+      display: block;
+      margin-top: 4px;
+      color: var(--accent-2);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .history-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .history-edit-hint {
+      margin: 0 0 10px;
+      color: var(--accent-2);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .history-breakdown-action {
+      margin: 0 0 10px;
+    }
+
+    .history-breakdown-action .button {
+      width: 100%;
+    }
+
+    .editor-view {
+      width: 100%;
+      max-width: 640px;
+    }
+
+    .form-actions.single {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .editor-delete-button {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      max-width: 100%;
+      min-height: 24px;
+      border-radius: 999px;
+      padding: 3px 8px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 850;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .chip.neutral {
+      background: #e8edf2;
+      color: #39444e;
+    }
+
+    body[data-theme] .chip.neutral {
+      background: var(--theme-highlight-soft);
+      color: var(--theme-highlight-ink);
+    }
+
+    .chip.excluded {
+      background: #f7ead9;
+      color: #815113;
+    }
+
+    .chip.credit {
+      background: #e1f2e8;
+      color: #1e6745;
+    }
+
+    .empty {
+      display: grid;
+      place-items: center;
+      min-height: 110px;
+      border: 1px dashed #cbd5de;
+      border-radius: 8px;
+      color: var(--muted);
+      text-align: center;
+      padding: 18px;
+      background: #fbfcfd;
+    }
+
+    .breakdown-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .bar-track {
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e4e9ee;
+      margin-top: 8px;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: var(--accent-2);
+    }
+
+    .settings-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .theme-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .custom-theme-options:empty {
+      display: none;
+    }
+
+    .custom-theme-options {
+      grid-template-columns: minmax(0, 1fr);
+      margin-top: 8px;
+    }
+
+    .theme-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 48px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      text-align: left;
+    }
+
+    .theme-option.active {
+      border-color: var(--accent-2);
+      box-shadow: 0 0 0 2px rgba(var(--accent-2-rgb), 0.18);
+    }
+
+    .theme-swatch {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      flex: 0 0 auto;
+      border: 1px solid rgba(23, 32, 38, 0.12);
+      border-radius: 50%;
+      background: var(--swatch);
+    }
+
+    .theme-option strong {
+      font-size: 13px;
+      line-height: 1.2;
+    }
+
+    .theme-accent-section {
+      display: grid;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .accent-options {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .accent-option {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 40px;
+      padding: 7px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .accent-option.active {
+      border-color: var(--accent-2);
+      box-shadow: 0 0 0 2px rgba(var(--accent-2-rgb), 0.16);
+    }
+
+    .accent-swatch {
+      width: 14px;
+      height: 14px;
+      flex: 0 0 auto;
+      border: 1px solid rgba(23, 32, 38, 0.16);
+      border-radius: 50%;
+      background: var(--swatch);
+    }
+
+    .custom-theme-editor {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .custom-theme-summary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 48px;
+      padding: 8px 12px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .custom-theme-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .custom-theme-summary::after {
+      content: "›";
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 22px;
+      font-weight: 700;
+      transition: transform 160ms ease;
+    }
+
+    .custom-theme-editor[open] .custom-theme-summary {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .custom-theme-editor[open] .custom-theme-summary::after {
+      transform: rotate(90deg);
+    }
+
+    .custom-theme-editor.active .custom-theme-summary {
+      color: var(--accent-2);
+    }
+
+    .custom-theme-editor-body {
+      display: grid;
+      gap: 8px;
+      padding: 10px 12px 12px;
+    }
+
+    .custom-theme-fields {
+      display: grid;
+      grid-template-columns: 52px minmax(0, 1fr);
+      gap: 8px;
+      align-items: end;
+    }
+
+    .custom-theme-fields input[type="color"] {
+      width: 52px;
+      height: 44px;
+      min-height: 44px;
+      padding: 4px;
+    }
+
+    .custom-theme-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+    }
+
+    .custom-theme-apply {
+      width: 100%;
+    }
+
+    .theme-add-details {
+      margin-top: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfd;
+    }
+
+    .theme-add-details summary {
+      min-height: 42px;
+      padding: 11px 12px;
+      color: var(--accent-2);
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .theme-add-details .add-theme-form {
+      padding: 0 10px 10px;
+    }
+
+    .add-theme-form {
+      display: grid;
+      grid-template-columns: 52px minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: end;
+      margin-top: 10px;
+    }
+
+    .add-theme-form .theme-name-field {
+      grid-column: 1 / -1;
+    }
+
+    .add-theme-form input[type="color"] {
+      width: 52px;
+      height: 44px;
+      min-height: 44px;
+      padding: 4px;
+    }
+
+    .budget-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
+      align-items: end;
+    }
+
+    .tag-editor {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .tag-editor-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 48px;
+      padding: 8px 12px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .tag-editor-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .tag-editor-summary::after {
+      content: "›";
+      color: var(--muted);
+      font-size: 22px;
+      font-weight: 700;
+      transition: transform 160ms ease;
+    }
+
+    .tag-editor[open] .tag-editor-summary {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tag-editor[open] .tag-editor-summary::after {
+      transform: rotate(90deg);
+    }
+
+    .tag-summary-main {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      gap: 8px;
+    }
+
+    .tag-summary-main strong {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tag-color-dot {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      border: 1px solid rgba(23, 32, 38, 0.16);
+      border-radius: 50%;
+      background: var(--tag-color);
+    }
+
+    .tag-editor-body {
+      display: grid;
+      gap: 10px;
+      padding: 10px 12px 12px;
+    }
+
+    .tag-editor-fields {
+      display: grid;
+      grid-template-columns: 52px minmax(0, 1fr);
+      gap: 8px;
+      align-items: end;
+    }
+
+    .tag-editor input[type="color"] {
+      width: 52px;
+      height: 44px;
+      min-height: 44px;
+      padding: 4px;
+      border-radius: 8px;
+    }
+
+    .tag-editor-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .checkbox-row {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 8px;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .checkbox-copy {
+      display: grid;
+      gap: 1px;
+      min-width: 0;
+      line-height: 1.25;
+    }
+
+    .checkbox-copy small {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .checkbox-row input {
+      width: 20px;
+      min-height: 20px;
+      height: 20px;
+      accent-color: var(--accent);
+    }
+
+    .add-tag-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    .tag-color-section {
+      display: grid;
+      gap: 6px;
+    }
+
+    .tag-color-palette {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .tag-color-swatch {
+      width: 100%;
+      min-height: 36px;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      background: var(--swatch);
+    }
+
+    .tag-color-swatch.active {
+      border-color: var(--ink);
+      box-shadow: 0 0 0 2px var(--accent-soft);
+    }
+
+    .color-details {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfd;
+    }
+
+    .color-details summary {
+      min-height: 40px;
+      padding: 10px;
+      color: var(--accent-2);
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .color-details > label {
+      padding: 0 10px 10px;
+    }
+
+    .color-details input[type="color"] {
+      height: 44px;
+      min-height: 44px;
+      padding: 4px;
+    }
+
+    .backup-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .file-input {
+      position: absolute;
+      inline-size: 1px;
+      block-size: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .status-line {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 14px;
+      right: 14px;
+      bottom: calc(14px + var(--safe-bottom));
+      z-index: 40;
+      transform: translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      border-radius: 8px;
+      background: #172026;
+      color: #fff;
+      padding: 12px 14px;
+      box-shadow: 0 16px 36px rgba(20, 28, 34, 0.24);
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media (min-width: 760px) {
+      .app-shell {
+        padding: 22px 22px 40px;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .left-rail {
+        position: sticky;
+        top: 94px;
+      }
+
+      body.editor-view-active .layout {
+        grid-template-columns: minmax(0, 640px);
+        justify-content: center;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .summary-card.primary {
+        grid-column: span 3;
+      }
+
+      .entry-grid {
+        grid-template-columns: 140px minmax(0, 1fr);
+      }
+
+      .section-grid {
+        grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+      }
+
+      .settings-grid {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      }
+
+    }
+
+    @media (max-width: 380px) {
+      .app-header {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .app-shell {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .summary-card,
+      .surface {
+        padding: 12px;
+      }
+
+      .button {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+    }
+  </style>
+</head>
+<body class="home-view">
+  <header class="app-header">
+    <button class="back-button" id="backButton" type="button" hidden>
+      <span class="back-mark" aria-hidden="true">‹</span>
+      <span>戻る</span>
+    </button>
+    <div class="brand">
+      <p class="brand-kicker">PERSONAL BUDGET</p>
+      <h1>予算帳</h1>
+    </div>
+    <div class="header-actions">
+      <button class="icon-button" id="settingsButton" type="button" aria-label="メニューを開く" aria-expanded="false" title="メニュー">
+        <span class="menu-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="menu-scrim" id="menuScrim"></div>
+  <nav class="header-menu" id="headerMenu" aria-label="メニュー" aria-hidden="true">
+    <button type="button" data-menu-view="settings">設定</button>
+    <button type="button" data-menu-view="entries">履歴</button>
+  </nav>
+
+  <main class="app-shell">
+    <div class="layout">
+      <section class="left-rail" id="homeView">
+        <div class="month-row">
+          <label class="field">
+            <span>表示月</span>
+            <input id="monthInput" type="month">
+          </label>
+          <button class="button" id="thisMonthButton" type="button">今月</button>
+        </div>
+
+        <section class="summary-grid" aria-live="polite">
+          <article class="summary-card primary" id="remainingCard">
+            <p class="summary-label">予算との差額</p>
+            <p class="summary-value" id="remainingValue">¥0</p>
+            <p class="summary-sub" id="remainingSub">予算対象の支出 ¥0 / 予算 ¥0</p>
+            <div class="progress-meta"><span class="progress-percent" id="progressPercent">0%</span></div>
+            <div class="progress" aria-hidden="true">
+              <div class="progress-bar" id="progressBar"></div>
+            </div>
+          </article>
+          <button class="summary-card summary-link" id="includedCard" type="button" aria-label="予算対象の支払い履歴を開く">
+            <p class="summary-label">予算対象</p>
+            <p class="summary-value" id="includedValue">¥0</p>
+            <p class="summary-sub">タップして履歴を開く</p>
+          </button>
+          <button class="summary-card summary-link" id="excludedCard" type="button" aria-label="予算対象外の支払い履歴を開く">
+            <p class="summary-label">予算対象外</p>
+            <p class="summary-value" id="excludedValue">¥0</p>
+            <p class="summary-sub">タップして履歴を開く</p>
+          </button>
+        </section>
+
+        <section class="surface">
+          <div class="surface-title">
+            <h2>支出を入力</h2>
+          </div>
+          <form class="entry-form" id="expenseForm" autocomplete="off">
+            <div class="entry-grid">
+              <label class="field">
+                <span>日付</span>
+                <input id="dateInput" type="date" required>
+              </label>
+              <label class="field">
+                <span>金額</span>
+                <input id="amountInput" inputmode="numeric" type="text" placeholder="例: 1280" required>
+              </label>
+            </div>
+            <label class="field">
+              <span>タグ</span>
+              <select id="tagInput" required></select>
+            </label>
+            <label class="field">
+              <span>メモ</span>
+              <textarea id="memoInput" placeholder="店名や内容"></textarea>
+            </label>
+            <div class="form-actions">
+              <button class="button" id="clearFormButton" type="button">クリア</button>
+              <button class="button primary" id="submitExpenseButton" type="submit">追加</button>
+            </div>
+          </form>
+        </section>
+      </section>
+
+      <div>
+        <section class="editor-view" id="editorView" hidden>
+          <div class="surface">
+            <div class="surface-title">
+              <div>
+                <h2>支出を編集</h2>
+                <p>内容を変更して保存できます</p>
+              </div>
+            </div>
+            <form class="entry-form" id="editExpenseForm" autocomplete="off">
+              <div class="entry-grid">
+                <label class="field">
+                  <span>日付</span>
+                  <input id="editDateInput" type="date" required>
+                </label>
+                <label class="field">
+                  <span>金額</span>
+                  <input id="editAmountInput" inputmode="numeric" type="text" placeholder="例: 1280" required>
+                </label>
+              </div>
+              <label class="field">
+                <span>タグ</span>
+                <select id="editTagInput" required></select>
+              </label>
+              <label class="field">
+                <span>メモ</span>
+                <textarea id="editMemoInput" placeholder="店名や内容"></textarea>
+              </label>
+              <div class="form-actions single">
+                <button class="button primary" type="submit">変更を保存</button>
+              </div>
+            </form>
+            <button class="button danger editor-delete-button" id="deleteEditingButton" type="button">この支出を削除</button>
+          </div>
+        </section>
+
+        <section id="entriesView" hidden>
+          <div class="surface">
+            <div class="surface-title">
+              <div>
+                <div class="history-title-row">
+                  <h2 id="historyTitle">支払い履歴</h2>
+                  <button class="button compact ghost" id="historyEditModeButton" type="button" aria-pressed="false">編集</button>
+                </div>
+                <p id="entryCountText">0件</p>
+              </div>
+              <label class="field">
+                <span>並び替え</span>
+                <select id="sortSelect" aria-label="履歴の並び替え">
+                  <option value="newest">新しい順</option>
+                  <option value="oldest">古い順</option>
+                  <option value="highest">金額が高い順</option>
+                </select>
+              </label>
+            </div>
+            <div class="history-tools">
+              <label class="field">
+                <span>検索</span>
+                <input id="historySearchInput" type="search" placeholder="メモ・タグ名を検索">
+              </label>
+              <div class="history-filter-grid">
+                <label class="field">
+                  <span>タグ</span>
+                  <select id="historyTagFilter"></select>
+                </label>
+                <label class="field">
+                  <span>金額</span>
+                  <input id="historyAmountInput" inputmode="numeric" type="text" placeholder="例: 1200">
+                </label>
+              </div>
+            </div>
+            <div class="history-breakdown-action">
+              <button class="button compact ghost" id="historyBreakdownButton" type="button">タグ別を見る</button>
+            </div>
+            <p class="history-edit-hint" id="historyEditHint" hidden>編集する支出を選択してください</p>
+            <div class="expense-list" id="expenseList"></div>
+          </div>
+        </section>
+
+        <section id="breakdownView" hidden>
+          <div class="section-grid">
+            <div class="surface">
+              <div class="surface-title">
+                <div>
+                  <h2 id="breakdownTitle">タグ別の支払い額</h2>
+                  <p id="breakdownSub">表示月の合計</p>
+                </div>
+              </div>
+              <div class="breakdown-list" id="breakdownList"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="settingsView" hidden>
+          <div class="settings-grid">
+            <div class="surface">
+              <div class="surface-title">
+                <div>
+                  <h2>予算</h2>
+                  <p>表示月ごとに自動保存</p>
+                </div>
+              </div>
+              <div class="budget-row">
+                <label class="field">
+                  <span>月予算</span>
+                  <input id="budgetInput" inputmode="numeric" type="text">
+                </label>
+              </div>
+              <p class="status-line" id="budgetStatus">自動保存</p>
+            </div>
+
+            <div class="surface">
+              <div class="surface-title">
+                <div>
+                  <h2>月のメモ</h2>
+                  <p id="monthNoteStatus">未保存</p>
+                </div>
+              </div>
+              <label class="field">
+                <span>メモ</span>
+                <textarea id="monthNoteInput" placeholder="今月の見通しや反省"></textarea>
+              </label>
+            </div>
+
+          </div>
+
+          <div class="surface">
+            <div class="surface-title">
+              <div>
+                <h2>タグ</h2>
+                <p>チェックしたタグは「予算対象外」に集計され、残り予算には影響しません</p>
+              </div>
+            </div>
+            <form class="add-tag-form" id="addTagForm" autocomplete="off">
+              <label class="field">
+                <span>新しいタグ</span>
+                <input id="newTagNameInput" type="text" placeholder="例: 書籍">
+              </label>
+              <div class="tag-color-section">
+                <span class="inline-label">色</span>
+                <div class="tag-color-palette" id="tagColorPalette" role="radiogroup" aria-label="定番色から選ぶ">
+                  <button class="tag-color-swatch active" type="button" style="--swatch:#23756b" data-tag-palette-color="#23756b" aria-label="深緑" aria-pressed="true"></button>
+                  <button class="tag-color-swatch" type="button" style="--swatch:#325fa8" data-tag-palette-color="#325fa8" aria-label="青" aria-pressed="false"></button>
+                  <button class="tag-color-swatch" type="button" style="--swatch:#7b5aa6" data-tag-palette-color="#7b5aa6" aria-label="紫" aria-pressed="false"></button>
+                  <button class="tag-color-swatch" type="button" style="--swatch:#c05637" data-tag-palette-color="#c05637" aria-label="橙" aria-pressed="false"></button>
+                  <button class="tag-color-swatch" type="button" style="--swatch:#b46d16" data-tag-palette-color="#b46d16" aria-label="黄土色" aria-pressed="false"></button>
+                  <button class="tag-color-swatch" type="button" style="--swatch:#b74862" data-tag-palette-color="#b74862" aria-label="赤" aria-pressed="false"></button>
+                  <button class="tag-color-swatch" type="button" style="--swatch:#28724e" data-tag-palette-color="#28724e" aria-label="緑" aria-pressed="false"></button>
+                  <button class="tag-color-swatch" type="button" style="--swatch:#0f7f8f" data-tag-palette-color="#0f7f8f" aria-label="青緑" aria-pressed="false"></button>
+                  <button class="tag-color-swatch" type="button" style="--swatch:#65717a" data-tag-palette-color="#65717a" aria-label="灰青" aria-pressed="false"></button>
+                  <button class="tag-color-swatch" type="button" style="--swatch:#896b4a" data-tag-palette-color="#896b4a" aria-label="茶" aria-pressed="false"></button>
+                  <button class="tag-color-swatch" type="button" style="--swatch:#d0719b" data-tag-palette-color="#d0719b" aria-label="ピンク" aria-pressed="false"></button>
+                  <button class="tag-color-swatch" type="button" style="--swatch:#5e6bb4" data-tag-palette-color="#5e6bb4" aria-label="藍" aria-pressed="false"></button>
+                </div>
+                <details class="color-details">
+                  <summary>詳細な色を選ぶ</summary>
+                  <label class="field"><span>色</span><input id="newTagColorInput" type="color" value="#23756b"></label>
+                </details>
+              </div>
+              <button class="button primary" type="submit">追加</button>
+            </form>
+            <div class="tag-list" id="tagList"></div>
+          </div>
+
+          <div class="surface">
+            <div class="surface-title">
+              <div>
+                <h2>バックアップ</h2>
+                <p id="backupStatus">まだ書き出していません</p>
+              </div>
+            </div>
+            <p class="status-line">普段の入力はこの端末へ自動保存されます。機種変更・再インストール・万一のデータ消失に備えるときだけ、JSONを書き出してください。</p>
+            <div class="backup-grid">
+              <button class="button" id="exportJsonButton" type="button">書き出し</button>
+              <button class="button" id="importJsonButton" type="button">読み込み</button>
+              <button class="button" id="exportCsvButton" type="button">CSV</button>
+              <button class="button danger" id="clearMonthButton" type="button">月を空に</button>
+            </div>
+            <input class="file-input" id="importFileInput" type="file" accept="application/json,.json">
+            <p class="status-line" id="storageStatus">保存先: この端末（自動保存）</p>
+          </div>
+
+          <div class="surface">
+            <div class="surface-title">
+              <div>
+                <h2>テーマカラー</h2>
+                <p>この端末に自動保存</p>
+              </div>
+            </div>
+            <div class="theme-options" id="themeOptions" role="group" aria-label="テーマカラー">
+              <button class="theme-option" type="button" data-theme-choice="standard" style="--swatch:#23756b"><span class="theme-swatch" aria-hidden="true"></span><strong>標準</strong></button>
+              <button class="theme-option" type="button" data-theme-choice="lavender" style="--swatch:#ad6ce0"><span class="theme-swatch" aria-hidden="true"></span><strong>ラベンダー</strong></button>
+              <button class="theme-option" type="button" data-theme-choice="sky" style="--swatch:#99d8ff"><span class="theme-swatch" aria-hidden="true"></span><strong>スカイ</strong></button>
+              <button class="theme-option" type="button" data-theme-choice="pink" style="--swatch:#ffacd3"><span class="theme-swatch" aria-hidden="true"></span><strong>ピンク</strong></button>
+            </div>
+            <div class="theme-accent-section">
+              <span class="inline-label">差し色</span>
+              <div class="accent-options" role="group" aria-label="差し色">
+                <button class="accent-option active" type="button" data-accent-color="" style="--swatch:#66737f" aria-pressed="true"><span class="accent-swatch" aria-hidden="true"></span>自動</button>
+                <button class="accent-option" type="button" data-accent-color="#d2a22a" style="--swatch:#d2a22a" aria-pressed="false"><span class="accent-swatch" aria-hidden="true"></span>黄</button>
+                <button class="accent-option" type="button" data-accent-color="#3aa79d" style="--swatch:#3aa79d" aria-pressed="false"><span class="accent-swatch" aria-hidden="true"></span>青緑</button>
+                <button class="accent-option" type="button" data-accent-color="#4b9fd4" style="--swatch:#4b9fd4" aria-pressed="false"><span class="accent-swatch" aria-hidden="true"></span>空</button>
+                <button class="accent-option" type="button" data-accent-color="#cf7380" style="--swatch:#cf7380" aria-pressed="false"><span class="accent-swatch" aria-hidden="true"></span>珊瑚</button>
+                <button class="accent-option" type="button" data-accent-color="#9b78d0" style="--swatch:#9b78d0" aria-pressed="false"><span class="accent-swatch" aria-hidden="true"></span>紫</button>
+              </div>
+            </div>
+            <div class="theme-options custom-theme-options" id="customThemeOptions"></div>
+            <details class="theme-add-details">
+              <summary>カラーを追加</summary>
+              <form class="add-theme-form" id="addThemeForm" autocomplete="off">
+                <label class="field theme-name-field"><span>追加する色の名前</span><input id="newThemeNameInput" type="text" placeholder="例: ミント"></label>
+                <label class="field"><span>色</span><input id="newThemeColorInput" type="color" value="#79cfc5"></label>
+                <label class="field"><span>カラーコード</span><input id="newThemeColorCodeInput" type="text" value="#79cfc5" inputmode="text" autocapitalize="characters" maxlength="7" placeholder="#79CFC5"></label>
+                <button class="button" type="submit">色を追加</button>
+              </form>
+            </details>
+            <p class="status-line" id="themeStatus">標準を使用中</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const STORAGE_KEY = "personal-budget-ledger-v1";
+      const DEFAULT_MONTHLY_BUDGET = 80000;
+      const DEFAULT_TAGS = [
+        { id: "food", name: "食費", color: "#23756b", excluded: false },
+        { id: "daily", name: "日用品", color: "#325fa8", excluded: false },
+        { id: "transport", name: "交通", color: "#7b5aa6", excluded: false },
+        { id: "fun", name: "娯楽", color: "#c05637", excluded: false },
+        { id: "medical", name: "医療", color: "#b46d16", excluded: false },
+        { id: "fixed", name: "固定費", color: "#4d6976", excluded: false },
+        { id: "necessary", name: "必要経費", color: "#65717a", excluded: true },
+        { id: "other", name: "その他", color: "#525c66", excluded: false }
+      ];
+      const THEMES = {
+        standard: { name: "標準", themeColor: "#f7f8fb" },
+        lavender: { name: "ラベンダー", themeColor: "#fcf9fe" },
+        sky: { name: "スカイ", themeColor: "#f7fcff" },
+        pink: { name: "ピンク", themeColor: "#fff9fc" }
+      };
+      const CUSTOM_THEME_VARIABLES = [
+        "--bg", "--surface-strong", "--accent", "--accent-2", "--accent-rgb", "--accent-2-rgb",
+        "--accent-soft", "--theme-base", "--theme-highlight", "--theme-highlight-ink", "--theme-highlight-soft",
+        "--header-bg", "--header-line"
+      ];
+
+      const elements = {
+        monthInput: document.getElementById("monthInput"),
+        thisMonthButton: document.getElementById("thisMonthButton"),
+        remainingCard: document.getElementById("remainingCard"),
+        remainingValue: document.getElementById("remainingValue"),
+        remainingSub: document.getElementById("remainingSub"),
+        progressPercent: document.getElementById("progressPercent"),
+        progressBar: document.getElementById("progressBar"),
+        includedCard: document.getElementById("includedCard"),
+        includedValue: document.getElementById("includedValue"),
+        excludedCard: document.getElementById("excludedCard"),
+        excludedValue: document.getElementById("excludedValue"),
+        expenseForm: document.getElementById("expenseForm"),
+        dateInput: document.getElementById("dateInput"),
+        amountInput: document.getElementById("amountInput"),
+        tagInput: document.getElementById("tagInput"),
+        memoInput: document.getElementById("memoInput"),
+        submitExpenseButton: document.getElementById("submitExpenseButton"),
+        clearFormButton: document.getElementById("clearFormButton"),
+        homeView: document.getElementById("homeView"),
+        editorView: document.getElementById("editorView"),
+        editExpenseForm: document.getElementById("editExpenseForm"),
+        editDateInput: document.getElementById("editDateInput"),
+        editAmountInput: document.getElementById("editAmountInput"),
+        editTagInput: document.getElementById("editTagInput"),
+        editMemoInput: document.getElementById("editMemoInput"),
+        deleteEditingButton: document.getElementById("deleteEditingButton"),
+        backButton: document.getElementById("backButton"),
+        settingsButton: document.getElementById("settingsButton"),
+        menuScrim: document.getElementById("menuScrim"),
+        headerMenu: document.getElementById("headerMenu"),
+        headerMenuButtons: Array.from(document.querySelectorAll("[data-menu-view]")),
+        entriesView: document.getElementById("entriesView"),
+        breakdownView: document.getElementById("breakdownView"),
+        settingsView: document.getElementById("settingsView"),
+        historyTitle: document.getElementById("historyTitle"),
+        entryCountText: document.getElementById("entryCountText"),
+        expenseList: document.getElementById("expenseList"),
+        historyEditModeButton: document.getElementById("historyEditModeButton"),
+        historyEditHint: document.getElementById("historyEditHint"),
+        historyBreakdownButton: document.getElementById("historyBreakdownButton"),
+        sortSelect: document.getElementById("sortSelect"),
+        historySearchInput: document.getElementById("historySearchInput"),
+        historyTagFilter: document.getElementById("historyTagFilter"),
+        historyAmountInput: document.getElementById("historyAmountInput"),
+        breakdownTitle: document.getElementById("breakdownTitle"),
+        breakdownSub: document.getElementById("breakdownSub"),
+        breakdownList: document.getElementById("breakdownList"),
+        monthNoteInput: document.getElementById("monthNoteInput"),
+        monthNoteStatus: document.getElementById("monthNoteStatus"),
+        budgetInput: document.getElementById("budgetInput"),
+        budgetStatus: document.getElementById("budgetStatus"),
+        themeButtons: Array.from(document.querySelectorAll("[data-theme-choice]")),
+        accentButtons: Array.from(document.querySelectorAll("[data-accent-color]")),
+        customThemeOptions: document.getElementById("customThemeOptions"),
+        addThemeForm: document.getElementById("addThemeForm"),
+        newThemeNameInput: document.getElementById("newThemeNameInput"),
+        newThemeColorInput: document.getElementById("newThemeColorInput"),
+        newThemeColorCodeInput: document.getElementById("newThemeColorCodeInput"),
+        themeStatus: document.getElementById("themeStatus"),
+        backupStatus: document.getElementById("backupStatus"),
+        exportJsonButton: document.getElementById("exportJsonButton"),
+        importJsonButton: document.getElementById("importJsonButton"),
+        importFileInput: document.getElementById("importFileInput"),
+        exportCsvButton: document.getElementById("exportCsvButton"),
+        clearMonthButton: document.getElementById("clearMonthButton"),
+        storageStatus: document.getElementById("storageStatus"),
+        addTagForm: document.getElementById("addTagForm"),
+        newTagNameInput: document.getElementById("newTagNameInput"),
+        newTagColorInput: document.getElementById("newTagColorInput"),
+        tagPaletteButtons: Array.from(document.querySelectorAll("[data-tag-palette-color]")),
+        tagList: document.getElementById("tagList"),
+        toast: document.getElementById("toast")
+      };
+
+      let state = loadState();
+      let selectedMonth = toMonthKey(new Date());
+      let editingExpenseId = null;
+      let historySort = "newest";
+      let historySearchQuery = "";
+      let historyTagId = "";
+      let historyAmountQuery = "";
+      let historyScope = "all";
+      let breakdownScope = "all";
+      let breakdownReturnView = "home";
+      let isHistoryEditMode = false;
+      let currentView = "home";
+      let toastTimer = 0;
+      let noteTimer = 0;
+      let budgetTimer = 0;
+
+      init();
+
+      function init() {
+        elements.monthInput.value = selectedMonth;
+        elements.dateInput.value = toDateKey(new Date());
+        applyTheme(state.themeId);
+        setNewTagColor(elements.newTagColorInput.value);
+        bindEvents();
+        saveState(false);
+        render();
+        window.setTimeout(maybePromptMonthlyBackup, 450);
+      }
+
+      function bindEvents() {
+        elements.monthInput.addEventListener("change", () => {
+          window.clearTimeout(budgetTimer);
+          selectedMonth = elements.monthInput.value || toMonthKey(new Date());
+          clearExpenseForm();
+          render();
+        });
+
+        elements.thisMonthButton.addEventListener("click", () => {
+          window.clearTimeout(budgetTimer);
+          selectedMonth = toMonthKey(new Date());
+          elements.monthInput.value = selectedMonth;
+          clearExpenseForm();
+          render();
+        });
+
+        elements.expenseForm.addEventListener("submit", (event) => {
+          event.preventDefault();
+          upsertExpense();
+        });
+
+        elements.clearFormButton.addEventListener("click", clearExpenseForm);
+        elements.editExpenseForm.addEventListener("submit", (event) => {
+          event.preventDefault();
+          updateEditingExpense();
+        });
+        elements.deleteEditingButton.addEventListener("click", deleteEditingExpense);
+        elements.backButton.addEventListener("click", () => {
+          if (currentView === "editor") closeExpenseEditor();
+          else if (currentView === "breakdown" && breakdownReturnView === "entries") setView("entries");
+          else setView("home");
+        });
+        elements.settingsButton.addEventListener("click", toggleHeaderMenu);
+        elements.headerMenuButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            closeHeaderMenu();
+            if (button.dataset.menuView === "entries") setHistoryScope("all");
+            setView(button.dataset.menuView);
+          });
+        });
+        elements.menuScrim.addEventListener("click", closeHeaderMenu);
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") closeHeaderMenu();
+        });
+        elements.includedCard.addEventListener("click", () => openHistoryScope("included"));
+        elements.excludedCard.addEventListener("click", () => openHistoryScope("excluded"));
+
+        elements.sortSelect.addEventListener("change", () => {
+          historySort = elements.sortSelect.value;
+          renderExpenses();
+        });
+        elements.historySearchInput.addEventListener("input", () => {
+          historySearchQuery = elements.historySearchInput.value.trim().toLocaleLowerCase("ja-JP");
+          renderExpenses();
+        });
+        elements.historyTagFilter.addEventListener("change", () => {
+          historyTagId = elements.historyTagFilter.value;
+          renderExpenses();
+        });
+        elements.historyAmountInput.addEventListener("input", () => {
+          historyAmountQuery = elements.historyAmountInput.value.replace(/[^0-9-]/g, "");
+          renderExpenses();
+        });
+        elements.historyEditModeButton.addEventListener("click", () => {
+          isHistoryEditMode = !isHistoryEditMode;
+          renderExpenses();
+        });
+        elements.historyBreakdownButton.addEventListener("click", () => {
+          breakdownScope = historyScope;
+          breakdownReturnView = "entries";
+          renderBreakdown();
+          setView("breakdown");
+        });
+
+        elements.budgetInput.addEventListener("input", () => {
+          window.clearTimeout(budgetTimer);
+          if (!elements.budgetInput.value.trim()) {
+            elements.budgetStatus.textContent = "金額を入力してください";
+            return;
+          }
+          elements.budgetStatus.textContent = "入力中…";
+          budgetTimer = window.setTimeout(() => saveBudget(false), 450);
+        });
+
+        elements.themeButtons.forEach((button) => {
+          button.addEventListener("click", () => setTheme(button.dataset.themeChoice));
+        });
+        elements.accentButtons.forEach((button) => {
+          button.addEventListener("click", () => setAccentColor(button.dataset.accentColor));
+        });
+        elements.addThemeForm.addEventListener("submit", addCustomTheme);
+        elements.newThemeColorInput.addEventListener("input", () => {
+          elements.newThemeColorCodeInput.value = elements.newThemeColorInput.value.toUpperCase();
+        });
+        elements.newThemeColorCodeInput.addEventListener("input", () => {
+          const color = elements.newThemeColorCodeInput.value.trim();
+          if (isColor(color)) elements.newThemeColorInput.value = color;
+        });
+
+        elements.monthNoteInput.addEventListener("input", () => {
+          window.clearTimeout(noteTimer);
+          elements.monthNoteStatus.textContent = "入力中";
+          noteTimer = window.setTimeout(() => {
+            state.monthNotes[selectedMonth] = elements.monthNoteInput.value.trim();
+            saveState();
+            elements.monthNoteStatus.textContent = "保存済み";
+          }, 350);
+        });
+
+        elements.exportJsonButton.addEventListener("click", exportJson);
+        elements.exportCsvButton.addEventListener("click", exportCsv);
+        elements.importJsonButton.addEventListener("click", () => elements.importFileInput.click());
+        elements.importFileInput.addEventListener("change", importJson);
+        elements.clearMonthButton.addEventListener("click", clearSelectedMonth);
+        elements.addTagForm.addEventListener("submit", addTag);
+        elements.tagPaletteButtons.forEach((button) => {
+          button.addEventListener("click", () => setNewTagColor(button.dataset.tagPaletteColor));
+        });
+        elements.newTagColorInput.addEventListener("input", () => setNewTagColor(elements.newTagColorInput.value));
+      }
+
+      function loadState() {
+        const fallback = {
+          version: 1,
+          monthlyBudgets: {},
+          monthNotes: {},
+          tags: clone(DEFAULT_TAGS),
+          expenses: [],
+          lastBackupAt: "",
+          lastBackupPromptMonth: "",
+          themeId: "standard",
+          accentColor: "",
+          customThemes: []
+        };
+
+        try {
+          const raw = window.localStorage.getItem(STORAGE_KEY);
+          if (!raw) return fallback;
+          const parsed = JSON.parse(raw);
+          const next = Object.assign(fallback, parsed);
+          next.monthlyBudgets = parsed.monthlyBudgets && typeof parsed.monthlyBudgets === "object" ? parsed.monthlyBudgets : {};
+          next.monthNotes = parsed.monthNotes && typeof parsed.monthNotes === "object" ? parsed.monthNotes : {};
+          next.tags = normalizeTags(parsed.tags);
+          next.expenses = normalizeExpenses(parsed.expenses, next.tags);
+          next.lastBackupAt = typeof parsed.lastBackupAt === "string" ? parsed.lastBackupAt : "";
+          next.lastBackupPromptMonth = typeof parsed.lastBackupPromptMonth === "string" ? parsed.lastBackupPromptMonth : "";
+          next.customThemes = normalizeCustomThemes(parsed.customThemes);
+          next.themeId = normalizeThemeId(parsed.themeId, next.customThemes);
+          next.accentColor = normalizeAccentColor(parsed.accentColor);
+          return next;
+        } catch (error) {
+          console.error(error);
+          elements.storageStatus.textContent = "保存データの読み込みに失敗しました";
+          return fallback;
+        }
+      }
+
+      function normalizeTags(tags) {
+        const source = Array.isArray(tags) && tags.length ? tags : DEFAULT_TAGS;
+        const seen = new Set();
+        const normalized = source
+          .filter((tag) => tag && typeof tag.name === "string")
+          .map((tag) => {
+            const id = String(tag.id || createId("tag"));
+            const safeId = seen.has(id) ? createId("tag") : id;
+            seen.add(safeId);
+            return {
+              id: safeId,
+              name: tag.name.trim() || "未分類",
+              color: isColor(tag.color) ? tag.color : "#525c66",
+              excluded: Boolean(tag.excluded)
+            };
+          });
+
+        if (!normalized.some((tag) => tag.id === "other")) {
+          normalized.push({ id: "other", name: "その他", color: "#525c66", excluded: false });
+        }
+
+        return normalized;
+      }
+
+      function normalizeExpenses(expenses, tags) {
+        const tagIds = new Set(tags.map((tag) => tag.id));
+        return (Array.isArray(expenses) ? expenses : [])
+          .map((expense) => ({
+            id: String(expense.id || createId("expense")),
+            date: isDateKey(expense.date) ? expense.date : toDateKey(new Date()),
+            amount: Math.round(Number(expense.amount) || 0),
+            tagId: tagIds.has(expense.tagId) ? expense.tagId : "other",
+            memo: typeof expense.memo === "string" ? expense.memo : "",
+            createdAt: expense.createdAt || new Date().toISOString(),
+            updatedAt: expense.updatedAt || expense.createdAt || new Date().toISOString()
+          }))
+          .filter((expense) => expense.amount !== 0);
+      }
+
+      function normalizeCustomThemes(themes) {
+        const seen = new Set();
+        return (Array.isArray(themes) ? themes : [])
+          .filter((theme) => theme && typeof theme.name === "string" && isColor(theme.color))
+          .map((theme) => {
+            const id = String(theme.id || createId("theme"));
+            const safeId = seen.has(id) || Object.prototype.hasOwnProperty.call(THEMES, id) ? createId("theme") : id;
+            seen.add(safeId);
+            return { id: safeId, name: theme.name.trim() || "追加カラー", color: theme.color };
+          });
+      }
+
+      function saveState(showSavedToast = true) {
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          elements.storageStatus.textContent = "保存先: この端末（自動保存）";
+          if (showSavedToast) showToast("保存しました");
+        } catch (error) {
+          console.error(error);
+          elements.storageStatus.textContent = "保存に失敗しました";
+          showToast("保存に失敗しました");
+        }
+      }
+
+      function render() {
+        renderTagOptions();
+        renderSummary();
+        renderExpenses();
+        renderBreakdown();
+        renderSettings();
+      }
+
+      function renderSummary() {
+        const budget = getBudget(selectedMonth);
+        const totals = getMonthTotals(selectedMonth);
+        const remaining = budget - totals.included;
+        const usedRate = budget > 0 ? totals.included / budget : 0;
+        const progress = Math.max(0, Math.min(100, Math.round(usedRate * 100)));
+
+        elements.remainingCard.classList.toggle("over", remaining < 0);
+        elements.remainingValue.textContent = formatYen(remaining);
+        elements.remainingSub.textContent = `予算対象の支出 ${formatYen(totals.included)} / 予算 ${formatYen(budget)}`;
+        elements.progressPercent.textContent = `${Math.round(usedRate * 100)}%`;
+        elements.includedValue.textContent = formatYen(totals.included);
+        elements.excludedValue.textContent = formatYen(totals.excluded);
+        elements.includedValue.classList.toggle("credit", totals.included < 0);
+        elements.excludedValue.classList.toggle("credit", totals.excluded < 0);
+        elements.progressBar.style.width = `${progress}%`;
+        elements.progressBar.classList.toggle("over", remaining < 0);
+      }
+
+      function renderTagOptions() {
+        renderTagSelect(elements.tagInput);
+        renderTagSelect(elements.editTagInput);
+      }
+
+      function renderTagSelect(select) {
+        const current = select.value;
+        select.innerHTML = "";
+        state.tags.forEach((tag) => {
+          const option = document.createElement("option");
+          option.value = tag.id;
+          option.textContent = tag.excluded ? `${tag.name}（予算対象外）` : tag.name;
+          select.appendChild(option);
+        });
+
+        const nextValue = state.tags.some((tag) => tag.id === current) ? current : state.tags[0].id;
+        select.value = nextValue;
+      }
+
+      function openHistoryScope(scope) {
+        setHistoryScope(scope);
+        setView("entries");
+      }
+
+      function setHistoryScope(scope) {
+        historyScope = scope === "included" || scope === "excluded" ? scope : "all";
+        historySearchQuery = "";
+        historyTagId = "";
+        historyAmountQuery = "";
+        isHistoryEditMode = false;
+        renderExpenses();
+      }
+
+      function scopeLabel(scope) {
+        if (scope === "included") return "予算対象";
+        if (scope === "excluded") return "予算対象外";
+        return "すべて";
+      }
+
+      function matchesBudgetScope(expense, scope = historyScope) {
+        if (scope === "all") return true;
+        return getTag(expense.tagId).excluded === (scope === "excluded");
+      }
+
+      function renderExpenses() {
+        renderHistoryTagFilter();
+        const scopedExpenses = getMonthExpenses(selectedMonth)
+          .filter((expense) => matchesBudgetScope(expense));
+        const expenses = scopedExpenses
+          .filter((expense) => matchesHistoryFilters(expense))
+          .sort(compareHistoryExpenses);
+
+        elements.sortSelect.value = historySort;
+        elements.historySearchInput.value = historySearchQuery;
+        elements.historyAmountInput.value = historyAmountQuery;
+        elements.historyTitle.textContent = historyScope === "all" ? "支払い履歴" : scopeLabel(historyScope);
+        elements.entryCountText.textContent = expenses.length === scopedExpenses.length ? `${expenses.length}件` : `${expenses.length}件 / ${scopedExpenses.length}件`;
+        elements.historyEditModeButton.textContent = isHistoryEditMode ? "完了" : "編集";
+        elements.historyEditModeButton.classList.toggle("blue", isHistoryEditMode);
+        elements.historyEditModeButton.setAttribute("aria-pressed", String(isHistoryEditMode));
+        elements.historyEditHint.hidden = !isHistoryEditMode;
+        elements.historyBreakdownButton.textContent = historyScope === "all" ? "タグ別を見る" : `${scopeLabel(historyScope)}のタグ別を見る`;
+        elements.expenseList.innerHTML = "";
+
+        if (!expenses.length) {
+          const label = historyScope === "all" ? "支出" : `${scopeLabel(historyScope)}の支出`;
+          elements.expenseList.appendChild(emptyNode(`この月の${label}はまだありません`));
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        expenses.forEach((expense) => {
+          const tag = getTag(expense.tagId);
+          const item = document.createElement("article");
+          item.className = `expense-item${isHistoryEditMode ? " editable" : ""}`;
+          if (isHistoryEditMode) {
+            item.tabIndex = 0;
+            item.setAttribute("role", "button");
+            item.setAttribute("aria-label", `${formatDate(expense.date)} ${formatYen(expense.amount)} を編集`);
+          }
+          item.innerHTML = `
+            <div class="expense-main">
+              <div class="expense-meta">
+                <span class="expense-date">${escapeHtml(formatDate(expense.date))}</span>
+                <span class="chip" style="background:${escapeAttr(tag.color)}">${escapeHtml(tag.name)}</span>
+                ${tag.excluded ? '<span class="chip excluded">予算対象外</span>' : ""}
+                ${expense.amount < 0 ? '<span class="chip credit">返金・収入</span>' : ""}
+              </div>
+              ${expense.memo ? `<p class="expense-memo">${escapeHtml(expense.memo)}</p>` : ""}
+            </div>
+            <div>
+              <div class="expense-amount${expense.amount < 0 ? " credit" : ""}">${escapeHtml(formatYen(expense.amount))}</div>
+              ${isHistoryEditMode ? '<span class="expense-edit-mark">選択</span>' : ""}
+            </div>
+          `;
+          if (isHistoryEditMode) {
+            item.addEventListener("click", () => editExpense(expense.id));
+            item.addEventListener("keydown", (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                editExpense(expense.id);
+              }
+            });
+          }
+          fragment.appendChild(item);
+        });
+
+        elements.expenseList.appendChild(fragment);
+      }
+
+      function renderHistoryTagFilter() {
+        const tags = state.tags.filter((tag) => historyScope === "all" || tag.excluded === (historyScope === "excluded"));
+        const current = tags.some((tag) => tag.id === historyTagId) ? historyTagId : "";
+        elements.historyTagFilter.innerHTML = "";
+        const allOption = document.createElement("option");
+        allOption.value = "";
+        allOption.textContent = "すべてのタグ";
+        elements.historyTagFilter.appendChild(allOption);
+        tags.forEach((tag) => {
+          const option = document.createElement("option");
+          option.value = tag.id;
+          option.textContent = tag.excluded ? `${tag.name}（予算対象外）` : tag.name;
+          elements.historyTagFilter.appendChild(option);
+        });
+        historyTagId = current;
+        elements.historyTagFilter.value = current;
+      }
+
+      function matchesHistoryFilters(expense) {
+        const tag = getTag(expense.tagId);
+        const searchTarget = `${tag.name} ${expense.memo}`.toLocaleLowerCase("ja-JP");
+        const amountText = String(expense.amount);
+        return (!historySearchQuery || searchTarget.includes(historySearchQuery))
+          && (!historyTagId || expense.tagId === historyTagId)
+          && (!historyAmountQuery || amountText.includes(historyAmountQuery));
+      }
+
+      function compareHistoryExpenses(firstExpense, secondExpense) {
+        if (historySort === "highest") return secondExpense.amount - firstExpense.amount;
+        const first = `${firstExpense.date}-${firstExpense.createdAt}`;
+        const second = `${secondExpense.date}-${secondExpense.createdAt}`;
+        return historySort === "oldest" ? first.localeCompare(second) : second.localeCompare(first);
+      }
+
+      function renderBreakdown() {
+        const totals = new Map();
+        const monthExpenses = getMonthExpenses(selectedMonth)
+          .filter((expense) => matchesBudgetScope(expense, breakdownScope));
+        monthExpenses.forEach((expense) => {
+          totals.set(expense.tagId, (totals.get(expense.tagId) || 0) + expense.amount);
+        });
+
+        const rows = state.tags
+          .filter((tag) => breakdownScope === "all" || tag.excluded === (breakdownScope === "excluded"))
+          .map((tag) => ({ tag, amount: totals.get(tag.id) || 0 }))
+          .sort((a, b) => b.amount - a.amount);
+
+        const maxAmount = Math.max(1, ...rows.map((row) => Math.abs(row.amount)));
+        elements.breakdownList.innerHTML = "";
+        elements.breakdownTitle.textContent = breakdownScope === "all" ? "タグ別の支払い額" : `${scopeLabel(breakdownScope)}のタグ別`;
+        elements.breakdownSub.textContent = breakdownScope === "all" ? "表示月の合計" : `${scopeLabel(breakdownScope)}だけを表示`;
+        elements.monthNoteInput.value = state.monthNotes[selectedMonth] || "";
+        elements.monthNoteStatus.textContent = elements.monthNoteInput.value ? "保存済み" : "未保存";
+
+        if (!monthExpenses.length) {
+          elements.breakdownList.appendChild(emptyNode(`${breakdownScope === "all" ? "内訳" : `${scopeLabel(breakdownScope)}の内訳`}はまだありません`));
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        rows.forEach(({ tag, amount }) => {
+          const row = document.createElement("article");
+          row.className = "breakdown-row";
+          const width = Math.round((Math.abs(amount) / maxAmount) * 100);
+          const barColor = amount < 0 ? "#28724e" : tag.color;
+          row.innerHTML = `
+            <div>
+              <div class="tag-meta">
+                <span class="chip" style="background:${escapeAttr(tag.color)}">${escapeHtml(tag.name)}</span>
+                ${tag.excluded ? '<span class="chip excluded">予算対象外</span>' : '<span class="chip neutral">予算対象</span>'}
+              </div>
+              <div class="bar-track" aria-hidden="true">
+                <div class="bar-fill" style="width:${width}%; background:${escapeAttr(barColor)}"></div>
+              </div>
+            </div>
+            <strong class="breakdown-value${amount < 0 ? " credit" : ""}">${escapeHtml(formatYen(amount))}</strong>
+          `;
+          fragment.appendChild(row);
+        });
+        elements.breakdownList.appendChild(fragment);
+      }
+
+      function renderSettings() {
+        elements.budgetInput.value = formatPlainNumber(getBudget(selectedMonth));
+        elements.budgetStatus.textContent = `${selectedMonth} の予算・自動保存`;
+        elements.backupStatus.textContent = state.lastBackupAt ? `最終書き出し: ${formatDateTime(state.lastBackupAt)}` : "まだ書き出していません";
+        renderThemeSettings();
+        renderTagList();
+      }
+
+      function normalizeThemeId(value, customThemes = []) {
+        const id = String(value || "");
+        return Object.prototype.hasOwnProperty.call(THEMES, id) || customThemes.some((theme) => theme.id === id) ? id : "standard";
+      }
+
+      function normalizeAccentColor(value) {
+        return isColor(value) ? value.toLowerCase() : "";
+      }
+
+      function getThemeDefinition(themeId, customThemes = state.customThemes) {
+        const id = normalizeThemeId(themeId, customThemes);
+        return THEMES[id] || customThemes.find((theme) => theme.id === id) || THEMES.standard;
+      }
+
+      function applyTheme(themeId) {
+        const id = normalizeThemeId(themeId, state.customThemes);
+        const theme = getThemeDefinition(id);
+        CUSTOM_THEME_VARIABLES.forEach((name) => document.body.style.removeProperty(name));
+        if (Object.prototype.hasOwnProperty.call(THEMES, id)) {
+          if (id === "standard") delete document.body.dataset.theme;
+          else document.body.dataset.theme = id;
+        } else {
+          document.body.dataset.theme = "custom";
+          const palette = buildCustomThemePalette(theme.color);
+          Object.entries(palette).forEach(([name, value]) => document.body.style.setProperty(name, value));
+        }
+        if (state.accentColor) applyAccentColor(state.accentColor);
+        const themeMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeMeta) themeMeta.setAttribute("content", theme.themeColor || theme.color);
+      }
+
+      function applyAccentColor(color) {
+        const accent = hexToRgb(color);
+        const accentInk = mixColors(accent, { r: 23, g: 32, b: 38 }, 0.38);
+        const accentSoft = mixColors(accent, { r: 255, g: 255, b: 255 }, 0.82);
+        document.body.style.setProperty("--accent-2", rgbToHex(accentInk));
+        document.body.style.setProperty("--accent-2-rgb", rgbToCss(accentInk));
+        document.body.style.setProperty("--theme-highlight", color);
+        document.body.style.setProperty("--theme-highlight-ink", rgbToHex(accentInk));
+        document.body.style.setProperty("--theme-highlight-soft", rgbToHex(accentSoft));
+      }
+
+      function buildCustomThemePalette(baseColor) {
+        const base = hexToRgb(baseColor);
+        const accent = mixColors(base, { r: 23, g: 32, b: 38 }, 0.56);
+        const accent2 = mixColors(accent, { r: 23, g: 32, b: 38 }, 0.18);
+        const background = mixColors(base, { r: 255, g: 255, b: 255 }, 0.95);
+        const strongSurface = mixColors(base, { r: 255, g: 255, b: 255 }, 0.84);
+        const soft = mixColors(base, { r: 255, g: 255, b: 255 }, 0.9);
+        const highlight = mixColors(base, { r: 255, g: 255, b: 255 }, 0.35);
+        const highlightSoft = mixColors(base, { r: 255, g: 255, b: 255 }, 0.86);
+        return {
+          "--bg": rgbToHex(background),
+          "--surface-strong": rgbToHex(strongSurface),
+          "--accent": rgbToHex(accent),
+          "--accent-2": rgbToHex(accent2),
+          "--accent-rgb": rgbToCss(accent),
+          "--accent-2-rgb": rgbToCss(accent2),
+          "--accent-soft": rgbToHex(soft),
+          "--theme-base": baseColor,
+          "--theme-highlight": rgbToHex(highlight),
+          "--theme-highlight-ink": rgbToHex(accent),
+          "--theme-highlight-soft": rgbToHex(highlightSoft),
+          "--header-bg": `rgba(${rgbToCss(background)}, 0.92)`,
+          "--header-line": `rgba(${rgbToCss(strongSurface)}, 0.95)`
+        };
+      }
+
+      function hexToRgb(value) {
+        const hex = value.replace("#", "");
+        return { r: parseInt(hex.slice(0, 2), 16), g: parseInt(hex.slice(2, 4), 16), b: parseInt(hex.slice(4, 6), 16) };
+      }
+
+      function mixColors(first, second, secondWeight) {
+        return {
+          r: Math.round(first.r * (1 - secondWeight) + second.r * secondWeight),
+          g: Math.round(first.g * (1 - secondWeight) + second.g * secondWeight),
+          b: Math.round(first.b * (1 - secondWeight) + second.b * secondWeight)
+        };
+      }
+
+      function rgbToHex(color) {
+        return `#${[color.r, color.g, color.b].map((value) => value.toString(16).padStart(2, "0")).join("")}`;
+      }
+
+      function rgbToCss(color) {
+        return `${color.r}, ${color.g}, ${color.b}`;
+      }
+
+      function renderThemeSettings() {
+        const themeId = normalizeThemeId(state.themeId, state.customThemes);
+        elements.themeButtons.forEach((button) => {
+          const selected = button.dataset.themeChoice === themeId;
+          button.classList.toggle("active", selected);
+          button.setAttribute("aria-pressed", String(selected));
+        });
+        elements.accentButtons.forEach((button) => {
+          const selected = button.dataset.accentColor.toLowerCase() === state.accentColor;
+          button.classList.toggle("active", selected);
+          button.setAttribute("aria-pressed", String(selected));
+        });
+        elements.customThemeOptions.innerHTML = "";
+        state.customThemes.forEach((theme) => {
+          const item = document.createElement("details");
+          const selected = theme.id === themeId;
+          item.className = `custom-theme-editor${selected ? " active" : ""}`;
+          item.innerHTML = `
+            <summary class="custom-theme-summary">
+              <span class="theme-swatch" style="--swatch:${escapeAttr(theme.color)}" aria-hidden="true"></span>
+            </summary>
+            <div class="custom-theme-editor-body">
+              <div class="custom-theme-fields">
+                <label class="field"><span>色</span><input type="color" value="${escapeAttr(theme.color)}" data-custom-theme-color="${escapeAttr(theme.id)}"></label>
+                <label class="field"><span>名前</span><input type="text" value="${escapeAttr(theme.name)}" data-custom-theme-name="${escapeAttr(theme.id)}"></label>
+              </div>
+              <button class="button primary custom-theme-apply" type="button" data-custom-theme-apply="${escapeAttr(theme.id)}">この色を使う</button>
+              <div class="custom-theme-actions">
+                <button class="button" type="button" data-custom-theme-save="${escapeAttr(theme.id)}">変更を保存</button>
+                <button class="button danger" type="button" data-custom-theme-delete="${escapeAttr(theme.id)}">削除</button>
+              </div>
+            </div>
+          `;
+          const name = document.createElement("strong");
+          name.textContent = theme.name;
+          item.querySelector(".custom-theme-summary").appendChild(name);
+          item.querySelector("[data-custom-theme-apply]").addEventListener("click", () => setTheme(theme.id));
+          item.querySelector("[data-custom-theme-save]").addEventListener("click", () => {
+            const nameInput = item.querySelector("[data-custom-theme-name]");
+            const colorInput = item.querySelector("[data-custom-theme-color]");
+            updateCustomTheme(theme.id, nameInput.value, colorInput.value);
+          });
+          item.querySelector("[data-custom-theme-delete]").addEventListener("click", () => deleteCustomTheme(theme.id));
+          elements.customThemeOptions.appendChild(item);
+        });
+        const accentName = elements.accentButtons.find((button) => button.dataset.accentColor.toLowerCase() === state.accentColor)?.textContent.trim() || "自動";
+        elements.themeStatus.textContent = `${getThemeDefinition(themeId).name} / 差し色: ${accentName}`;
+      }
+
+      function setTheme(themeId) {
+        state.themeId = normalizeThemeId(themeId, state.customThemes);
+        applyTheme(state.themeId);
+        renderThemeSettings();
+        saveState(false);
+        showToast(`${getThemeDefinition(state.themeId).name}に変更しました`);
+      }
+
+      function setAccentColor(color) {
+        state.accentColor = normalizeAccentColor(color);
+        applyTheme(state.themeId);
+        renderThemeSettings();
+        saveState(false);
+        showToast(state.accentColor ? "差し色を変更しました" : "差し色を自動に戻しました");
+      }
+
+      function addCustomTheme(event) {
+        event.preventDefault();
+        const color = elements.newThemeColorCodeInput.value.trim();
+        if (!isColor(color)) {
+          elements.themeStatus.textContent = "カラーコードは #RRGGBB 形式で入力してください";
+          return;
+        }
+        state.customThemes.push({
+          id: createId("theme"),
+          name: elements.newThemeNameInput.value.trim() || "追加カラー",
+          color: color.toLowerCase()
+        });
+        state.themeId = state.customThemes[state.customThemes.length - 1].id;
+        elements.newThemeNameInput.value = "";
+        elements.newThemeColorCodeInput.value = elements.newThemeColorInput.value.toUpperCase();
+        applyTheme(state.themeId);
+        renderThemeSettings();
+        saveState(false);
+        showToast("カラーを追加しました");
+      }
+
+      function updateCustomTheme(id, name, color) {
+        const theme = state.customThemes.find((item) => item.id === id);
+        if (!theme || !isColor(color)) return;
+        theme.name = name.trim() || "追加カラー";
+        theme.color = color.toLowerCase();
+        if (state.themeId === id) applyTheme(id);
+        saveState(false);
+        renderThemeSettings();
+        showToast("カラーを更新しました");
+      }
+
+      function deleteCustomTheme(id) {
+        const theme = state.customThemes.find((item) => item.id === id);
+        if (!theme) return;
+        const ok = window.confirm(`${theme.name} を削除しますか？`);
+        if (!ok) return;
+        state.customThemes = state.customThemes.filter((item) => item.id !== id);
+        if (state.themeId === id) {
+          state.themeId = "standard";
+          applyTheme(state.themeId);
+        }
+        saveState(false);
+        renderThemeSettings();
+        showToast("カラーを削除しました");
+      }
+
+      function renderTagList() {
+        elements.tagList.innerHTML = "";
+        const fragment = document.createDocumentFragment();
+        state.tags.forEach((tag) => {
+          const expensesUsingTag = state.expenses.filter((expense) => expense.tagId === tag.id).length;
+          const item = document.createElement("details");
+          item.className = "tag-editor";
+          item.innerHTML = `
+            <summary class="tag-editor-summary">
+              <span class="tag-summary-main">
+                <span class="tag-color-dot" style="--tag-color:${escapeAttr(tag.color)}" aria-hidden="true"></span>
+                <strong>${escapeHtml(tag.name)}</strong>
+              </span>
+              <span class="chip ${tag.excluded ? "excluded" : "neutral"}">${tag.excluded ? "予算対象外" : "予算対象"}</span>
+            </summary>
+            <div class="tag-editor-body">
+              <div class="tag-editor-fields">
+                <input type="color" value="${escapeAttr(tag.color)}" aria-label="${escapeAttr(tag.name)}の色" data-tag-color="${escapeAttr(tag.id)}">
+                <label class="field"><span>タグ名</span><input type="text" value="${escapeAttr(tag.name)}" aria-label="タグ名" data-tag-name="${escapeAttr(tag.id)}"></label>
+              </div>
+              <div class="tag-editor-actions">
+                <label class="checkbox-row">
+                  <input type="checkbox" ${tag.excluded ? "checked" : ""} data-tag-excluded="${escapeAttr(tag.id)}">
+                  <span>予算対象外にする</span>
+                </label>
+                <button class="button compact danger" type="button" data-tag-delete="${escapeAttr(tag.id)}" ${expensesUsingTag ? "disabled" : ""}>削除</button>
+              </div>
+            </div>
+          `;
+          fragment.appendChild(item);
+        });
+        elements.tagList.appendChild(fragment);
+
+        elements.tagList.querySelectorAll("[data-tag-name]").forEach((input) => {
+          input.addEventListener("change", () => {
+            const tag = getTag(input.dataset.tagName);
+            const nextName = input.value.trim();
+            if (!nextName) {
+              input.value = tag.name;
+              return;
+            }
+            tag.name = nextName;
+            saveState();
+            render();
+          });
+        });
+
+        elements.tagList.querySelectorAll("[data-tag-color]").forEach((input) => {
+          input.addEventListener("input", () => {
+            const tag = getTag(input.dataset.tagColor);
+            tag.color = input.value;
+            saveState(false);
+            renderSummary();
+            renderExpenses();
+            renderBreakdown();
+          });
+        });
+
+        elements.tagList.querySelectorAll("[data-tag-excluded]").forEach((input) => {
+          input.addEventListener("change", () => {
+            const tag = getTag(input.dataset.tagExcluded);
+            tag.excluded = input.checked;
+            saveState();
+            render();
+          });
+        });
+
+        elements.tagList.querySelectorAll("[data-tag-delete]").forEach((button) => {
+          button.addEventListener("click", () => deleteTag(button.dataset.tagDelete));
+        });
+      }
+
+      function upsertExpense() {
+        const amount = parseAmount(elements.amountInput.value);
+        if (!amount) {
+          showToast("金額（0円以外）を入力してください");
+          elements.amountInput.focus();
+          return;
+        }
+
+        const payload = {
+          date: elements.dateInput.value || toDateKey(new Date()),
+          amount,
+          tagId: elements.tagInput.value,
+          memo: elements.memoInput.value.trim(),
+          updatedAt: new Date().toISOString()
+        };
+
+        state.expenses.push(Object.assign({
+          id: createId("expense"),
+          createdAt: new Date().toISOString()
+        }, payload));
+
+        selectedMonth = payload.date.slice(0, 7);
+        elements.monthInput.value = selectedMonth;
+        saveState();
+        clearExpenseForm(false);
+        render();
+      }
+
+      function editExpense(id) {
+        const expense = state.expenses.find((item) => item.id === id);
+        if (!expense) return;
+        editingExpenseId = id;
+        renderTagOptions();
+        elements.editDateInput.value = expense.date;
+        elements.editAmountInput.value = formatPlainNumber(expense.amount);
+        elements.editTagInput.value = expense.tagId;
+        elements.editMemoInput.value = expense.memo;
+        setView("editor");
+      }
+
+      function updateEditingExpense() {
+        const expense = state.expenses.find((item) => item.id === editingExpenseId);
+        if (!expense) return;
+        const amount = parseAmount(elements.editAmountInput.value);
+        if (!amount) {
+          showToast("金額（0円以外）を入力してください");
+          elements.editAmountInput.focus();
+          return;
+        }
+
+        const payload = {
+          date: elements.editDateInput.value || toDateKey(new Date()),
+          amount,
+          tagId: elements.editTagInput.value,
+          memo: elements.editMemoInput.value.trim(),
+          updatedAt: new Date().toISOString()
+        };
+        Object.assign(expense, payload);
+        selectedMonth = payload.date.slice(0, 7);
+        elements.monthInput.value = selectedMonth;
+        editingExpenseId = null;
+        isHistoryEditMode = false;
+        saveState();
+        render();
+        setView("entries");
+      }
+
+      function deleteEditingExpense() {
+        const expense = state.expenses.find((item) => item.id === editingExpenseId);
+        if (!expense) return;
+        const ok = window.confirm(`${formatDate(expense.date)} ${formatYen(expense.amount)} を削除しますか？`);
+        if (!ok) return;
+        state.expenses = state.expenses.filter((item) => item.id !== editingExpenseId);
+        editingExpenseId = null;
+        isHistoryEditMode = false;
+        saveState();
+        render();
+        setView("entries");
+      }
+
+      function closeExpenseEditor() {
+        editingExpenseId = null;
+        isHistoryEditMode = false;
+        renderExpenses();
+        setView("entries");
+      }
+
+      function clearExpenseForm(renderAfter = true) {
+        elements.dateInput.value = selectedMonth === toMonthKey(new Date()) ? toDateKey(new Date()) : `${selectedMonth}-01`;
+        elements.amountInput.value = "";
+        elements.memoInput.value = "";
+        if (state.tags.length) elements.tagInput.value = state.tags[0].id;
+        if (renderAfter) render();
+      }
+
+      function saveBudget(showSavedToast = false) {
+        if (!elements.budgetInput.value.trim()) return;
+        const amount = parseAmount(elements.budgetInput.value);
+        state.monthlyBudgets[selectedMonth] = Math.max(0, amount);
+        saveState(showSavedToast);
+        elements.budgetStatus.textContent = "自動保存済み";
+        renderSummary();
+      }
+
+      function setNewTagColor(color) {
+        if (!isColor(color)) return;
+        const normalized = color.toLowerCase();
+        elements.newTagColorInput.value = normalized;
+        elements.tagPaletteButtons.forEach((button) => {
+          const selected = button.dataset.tagPaletteColor.toLowerCase() === normalized;
+          button.classList.toggle("active", selected);
+          button.setAttribute("aria-pressed", String(selected));
+        });
+      }
+
+      function addTag(event) {
+        event.preventDefault();
+        const name = elements.newTagNameInput.value.trim();
+        if (!name) {
+          showToast("タグ名を入力してください");
+          return;
+        }
+        state.tags.push({
+          id: createId("tag"),
+          name,
+          color: elements.newTagColorInput.value,
+          excluded: false
+        });
+        elements.newTagNameInput.value = "";
+        setNewTagColor(elements.tagPaletteButtons[0].dataset.tagPaletteColor);
+        saveState();
+        render();
+      }
+
+      function deleteTag(id) {
+        const tag = getTag(id);
+        if (!tag) return;
+        if (state.expenses.some((expense) => expense.tagId === id)) {
+          showToast("使用中のタグは削除できません");
+          return;
+        }
+        const ok = window.confirm(`${tag.name} を削除しますか？`);
+        if (!ok) return;
+        state.tags = state.tags.filter((item) => item.id !== id);
+        saveState();
+        render();
+      }
+
+      function clearSelectedMonth() {
+        const expenses = getMonthExpenses(selectedMonth);
+        if (!expenses.length) {
+          showToast("この月の支出はありません");
+          return;
+        }
+        const ok = window.confirm(`${selectedMonth} の支出 ${expenses.length}件を削除しますか？`);
+        if (!ok) return;
+        state.expenses = state.expenses.filter((expense) => !expense.date.startsWith(selectedMonth));
+        clearExpenseForm(false);
+        saveState();
+        render();
+      }
+
+      function toggleHeaderMenu() {
+        const willOpen = !elements.headerMenu.classList.contains("open");
+        elements.headerMenu.classList.toggle("open", willOpen);
+        elements.menuScrim.classList.toggle("active", willOpen);
+        document.body.classList.toggle("menu-open", willOpen);
+        elements.settingsButton.classList.toggle("active", willOpen);
+        elements.settingsButton.setAttribute("aria-expanded", String(willOpen));
+        elements.headerMenu.setAttribute("aria-hidden", String(!willOpen));
+      }
+
+      function closeHeaderMenu() {
+        elements.headerMenu.classList.remove("open");
+        elements.menuScrim.classList.remove("active");
+        document.body.classList.remove("menu-open");
+        elements.settingsButton.classList.remove("active");
+        elements.settingsButton.setAttribute("aria-expanded", "false");
+        elements.headerMenu.setAttribute("aria-hidden", "true");
+      }
+
+      function setView(view) {
+        closeHeaderMenu();
+        currentView = view;
+        const isHome = view === "home";
+        document.body.classList.toggle("home-view", isHome);
+        document.body.classList.toggle("editor-view-active", view === "editor");
+        elements.backButton.hidden = isHome;
+        elements.homeView.hidden = view !== "home";
+        elements.editorView.hidden = view !== "editor";
+        elements.entriesView.hidden = view !== "entries";
+        elements.breakdownView.hidden = view !== "breakdown";
+        elements.settingsView.hidden = view !== "settings";
+        window.scrollTo({ top: 0, behavior: "auto" });
+      }
+
+      function maybePromptMonthlyBackup() {
+        const now = new Date();
+        if (now.getDate() !== 1) return;
+        const promptMonth = toMonthKey(now);
+        if (state.lastBackupPromptMonth === promptMonth) return;
+        state.lastBackupPromptMonth = promptMonth;
+        saveState(false);
+        const shouldExport = window.confirm("月初のバックアップ確認です。今すぐJSONバックアップを書き出しますか？");
+        if (shouldExport) exportJson();
+      }
+
+      function getMonthExpenses(monthKey) {
+        return state.expenses.filter((expense) => expense.date.startsWith(monthKey));
+      }
+
+      function getMonthTotals(monthKey) {
+        return getMonthExpenses(monthKey).reduce((totals, expense) => {
+          const tag = getTag(expense.tagId);
+          if (tag.excluded) totals.excluded += expense.amount;
+          else totals.included += expense.amount;
+          return totals;
+        }, { included: 0, excluded: 0 });
+      }
+
+      function getBudget(monthKey) {
+        const saved = Number(state.monthlyBudgets[monthKey]);
+        if (Number.isFinite(saved) && saved >= 0) return saved;
+        return DEFAULT_MONTHLY_BUDGET;
+      }
+
+      function getTag(id) {
+        return state.tags.find((tag) => tag.id === id) || state.tags.find((tag) => tag.id === "other") || state.tags[0];
+      }
+
+      function exportJson() {
+        state.lastBackupAt = new Date().toISOString();
+        saveState(false);
+        downloadFile(`budget-backup-${toDateKey(new Date())}.json`, JSON.stringify(state, null, 2), "application/json");
+        renderSettings();
+        showToast("バックアップを書き出しました");
+      }
+
+      function exportCsv() {
+        const header = ["日付", "金額", "タグ", "予算区分", "メモ"];
+        const rows = getMonthExpenses(selectedMonth)
+          .sort((a, b) => a.date.localeCompare(b.date))
+          .map((expense) => {
+            const tag = getTag(expense.tagId);
+            return [
+              expense.date,
+              String(expense.amount),
+              tag.name,
+              tag.excluded ? "予算対象外" : "予算対象",
+              expense.memo
+            ];
+          });
+        const csv = [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\n");
+        downloadFile(`budget-${selectedMonth}.csv`, "\uFEFF" + csv, "text/csv;charset=utf-8");
+        showToast("CSVを書き出しました");
+      }
+
+      function importJson(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const parsed = JSON.parse(String(reader.result || ""));
+            const imported = {
+              version: 1,
+              monthlyBudgets: parsed.monthlyBudgets && typeof parsed.monthlyBudgets === "object" ? parsed.monthlyBudgets : {},
+              monthNotes: parsed.monthNotes && typeof parsed.monthNotes === "object" ? parsed.monthNotes : {},
+              tags: normalizeTags(parsed.tags),
+              expenses: [],
+              lastBackupAt: parsed.lastBackupAt || "",
+              lastBackupPromptMonth: typeof parsed.lastBackupPromptMonth === "string" ? parsed.lastBackupPromptMonth : "",
+              customThemes: normalizeCustomThemes(parsed.customThemes),
+              themeId: "standard",
+              accentColor: normalizeAccentColor(parsed.accentColor)
+            };
+            imported.themeId = normalizeThemeId(parsed.themeId, imported.customThemes);
+            imported.expenses = normalizeExpenses(parsed.expenses, imported.tags);
+
+            const ok = window.confirm(`バックアップを読み込みますか？\n支出 ${imported.expenses.length}件 / タグ ${imported.tags.length}個`);
+            if (!ok) return;
+
+            state = imported;
+            applyTheme(state.themeId);
+            saveState();
+            clearExpenseForm(false);
+            render();
+            showToast("バックアップを読み込みました");
+          } catch (error) {
+            console.error(error);
+            showToast("読み込みに失敗しました");
+          } finally {
+            elements.importFileInput.value = "";
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      function downloadFile(filename, text, type) {
+        const blob = new Blob([text], { type });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      function parseAmount(value) {
+        const normalized = String(value || "")
+          .replace(/[０-９]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0xFEE0))
+          .replace(/[－−]/g, "-")
+          .replace(/[,\s￥¥円]/g, "");
+        const number = Number(normalized);
+        return Number.isFinite(number) ? Math.round(number) : 0;
+      }
+
+      function formatYen(value) {
+        const sign = value < 0 ? "-" : "";
+        return `${sign}¥${formatPlainNumber(Math.abs(Math.round(value)))}`;
+      }
+
+      function formatPlainNumber(value) {
+        return new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 }).format(Math.round(Number(value) || 0));
+      }
+
+      function formatDate(dateKey) {
+        const parts = dateKey.split("-");
+        if (parts.length !== 3) return dateKey;
+        return `${Number(parts[1])}/${Number(parts[2])}`;
+      }
+
+      function formatDateTime(iso) {
+        const date = new Date(iso);
+        if (Number.isNaN(date.getTime())) return "";
+        return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+      }
+
+      function toMonthKey(date) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      }
+
+      function toDateKey(date) {
+        return `${toMonthKey(date)}-${String(date.getDate()).padStart(2, "0")}`;
+      }
+
+      function isDateKey(value) {
+        return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
+      }
+
+      function isColor(value) {
+        return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value);
+      }
+
+      function createId(prefix) {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") {
+          return `${prefix}-${window.crypto.randomUUID()}`;
+        }
+        return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      }
+
+      function emptyNode(text) {
+        const node = document.createElement("div");
+        node.className = "empty";
+        node.textContent = text;
+        return node;
+      }
+
+      function showToast(message) {
+        window.clearTimeout(toastTimer);
+        elements.toast.textContent = message;
+        elements.toast.classList.add("show");
+        toastTimer = window.setTimeout(() => elements.toast.classList.remove("show"), 1600);
+      }
+
+      function csvCell(value) {
+        const text = String(value || "");
+        return `"${text.replace(/"/g, '""')}"`;
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function escapeAttr(value) {
+        return escapeHtml(value).replace(/`/g, "&#096;");
+      }
+
+      function clone(value) {
+        return JSON.parse(JSON.stringify(value));
+      }
+    })();
+  </script>
+  <script>
+    if (location.protocol !== "file:" && "serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js").catch(() => {
+          // ローカルHTMLとして開いた場合など、登録できない環境では通常表示を続けます。
+        });
+      });
+    }
+  </script>
+</body>
+</html>
